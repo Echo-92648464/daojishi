@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💕 恋爱倒计时 💕</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #533483 100%);
+      font-family: 'ZCOOL XiaoWei', serif;
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 星空背景 */
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle var(--duration, 3s) ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle {
+      0% { opacity: 0.2; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* 飘落的心形 */
+    .hearts-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .heart {
+      position: absolute;
+      top: -20px;
+      font-size: var(--size, 20px);
+      color: var(--color, #ff6b9d);
+      animation: float-down var(--fall, 12s) linear infinite;
+      animation-delay: var(--delay, 0s);
+      opacity: 0.6;
+    }
+
+    @keyframes float-down {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.4; }
+      100% {
+        transform: translateY(110vh) translateX(var(--drift, 50px)) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* 主容器 */
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    /* 标题 */
+    .title {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      margin-bottom: 0.5rem;
+      background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 50%, #ff9a9e 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 4s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 200% 50%; }
+    }
+
+    .subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: rgba(255, 200, 220, 0.85);
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* 光晕装饰 */
+    .glow-ring {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 107, 157, 0.08) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-glow 4s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    @keyframes pulse-glow {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+      100% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+    }
+
+    /* 倒计时卡片 */
+    .countdown-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .countdown-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 1.5rem 1rem;
+      min-width: 110px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .countdown-card:hover {
+      transform: translateY(-6px) scale(1.04);
+      box-shadow: 0 12px 40px rgba(255, 107, 157, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .countdown-card .number {
+      font-family: 'Ma Shan Zheng', cursive;
+      font-size: clamp(3rem, 5vw, 4.5rem);
+      line-height: 1;
+      background: linear-gradient(180deg, #fff 30%, #ff9a9e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 2px 6px rgba(255, 154, 158, 0.3));
+    }
+
+    .countdown-card .unit {
+      font-size: 0.95rem;
+      color: rgba(255, 200, 220, 0.8);
+      margin-top: 0.4rem;
+      letter-spacing: 0.15em;
+    }
+
+    /* 目标日期 */
+    .target-date {
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .target-date .heart-icon {
+      color: #ff6b9d;
+      font-size: 1.3em;
+      animation: heartbeat 1.2s ease-in-out infinite;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      15% { transform: scale(1.2); }
+      30% { transform: scale(1); }
+      45% { transform: scale(1.15); }
+      60% { transform: scale(1); }
+    }
+
+    /* 情话区域 */
+    .love-quote {
+      font-size: clamp(0.95rem, 2vw, 1.2rem);
+      color: rgba(255, 200, 220, 0.75);
+      max-width: 600px;
+      margin: 0 auto;
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    /* 粒子装饰 */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 107, 157, 0.6), transparent 70%);
+      pointer-events: none;
+      animation: drift var(--p-dur, 8s) ease-in-out infinite alternate;
+    }
+
+    @keyframes drift {
+      0% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(var(--px, 30px), var(--py, -20px)) scale(1.1); }
+      66% { transform: translate(calc(var(--px, 30px) * -0.5), calc(var(--py, -20px) * 1.5)) scale(0.9); }
+      100% { transform: translate(var(--px2, -20px), var(--py2, 30px)) scale(1); }
+    }
+
+    /* 响应式 */
+    @media (max-width: 600px) {
+      .countdown-wrapper { gap: 0.8rem; }
+      .countdown-card { min-width: 80px; padding: 1rem 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="stars" id="stars"></div>
+  <div class="hearts-container" id="hearts"></div>
+
+  <div class="container">
+    <div class="glow-ring"></div>
+
+    <div class="title">恋爱倒计时</div>
+    <div class="subtitle">每一秒，都是爱你的形状</div>
+
+    <div class="target-date">
+      <span class="heart-icon">💗</span>
+      <span id="targetText">2026年11月7日</span>
+      <span class="heart-icon">💗</span>
+    </div>
+
+    <div class="countdown-wrapper">
+      <div class="countdown-card">
+        <div class="number" id="days">--</div>
+        <div class="unit">天</div>
+      </div>
+      <div class="countdown-card">
+        <div class="number" id="hours">--</div>
+        <div class="unit">时</div>
+      </div>
+      <div class="countdown-card">
+        <div class="number" id="minutes">--</div>
+        <div class="unit">分</div>
+      </div>
+      <div class="countdown-card">
+        <div class="number" id="seconds">--</div>
+        <div class="unit">秒</div>
+      </div>
+    </div>
+
+    <div class="love-quote" id="loveQuote">
+      "斯人若彩虹，遇上方知有"
+    </div>
+  </div>
+
+  <script>
+    // 目标日期
+    const target = new Date('2026-11-07T00:00:00+08:00').getTime();
+
+    const quotes = [
+      "斯人若彩虹，遇上方知有",
+      "星河滚滚，你是人间理想",
+      "山野万里，你是我藏在微风中的欢喜",
+      "晓看天色暮看云，行也思君，坐也思君",
+      "玲珑骰子安红豆，入骨相思知不知",
+      "愿有岁月可回首，且以深情共白头",
+      "既许一人以偏爱，愿尽余生之慷慨"
+    ];
+
+    let quoteIndex = 0;
+    setInterval(() => {
+      quoteIndex = (quoteIndex + 1) % quotes.length;
+      const el = document.getElementById('loveQuote');
+      el.style.opacity = 0;
+      setTimeout(() => {
+        el.textContent = `"${quotes[quoteIndex]}"`;
+        el.style.opacity = 1;
+      }, 500);
+    }, 5000);
+
+    document.getElementById('loveQuote').style.transition = 'opacity 0.5s ease';
+
+    function padZero(n) {
+      return n < 10 ? `0${n}` : `${n}`;
+    }
+
+    function updateCountdown() {
+      const now = Date.now();
+      let diff = target - now;
+      let isPast = false;
+
+      if (diff <= 0) {
+        diff = Math.abs(diff);
+        isPast = true;
+      }
+
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+
+      document.getElementById('days').textContent = padZero(d);
+      document.getElementById('hours').textContent = padZero(h);
+      document.getElementById('minutes').textContent = padZero(m);
+      document.getElementById('seconds').textContent = padZero(s);
+
+      if (isPast) {
+        document.querySelector('.title').textContent = '💕 已经在一起啦 💕';
+        document.querySelector('.subtitle').textContent = '每一天，都是爱你的新起点';
+        document.querySelectorAll('.unit').forEach((el, i) => {
+          el.textContent = ['天', '时', '分', '秒'][i];
+        });
+      }
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // 星空
+    function createStars(count) {
+      const container = document.getElementById('stars');
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 3 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+        star.style.animationDelay = `${Math.random() * 3}s`;
+        container.appendChild(star);
+      }
+    }
+    createStars(120);
+
+    // 飘落心形
+    function createHearts(count) {
+      const container = document.getElementById('hearts');
+      const hearts = ['♥', '♡', '❤', '💕'];
+      const colors = ['#ff6b9d', '#ff85a1', '#ff4081', '#f48fb1', '#e91e63', '#ff6b6b'];
+      for (let i = 0; i < count; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        heart.style.left = `${Math.random() * 100}%`;
+        heart.style.setProperty('--size', `${Math.random() * 14 + 10}px`);
+        heart.style.setProperty('--color', colors[Math.floor(Math.random() * colors.length)]);
+        heart.style.setProperty('--fall', `${Math.random() * 10 + 10}s`);
+        heart.style.setProperty('--delay', `${Math.random() * 12}s`);
+        heart.style.setProperty('--drift', `${(Math.random() - 0.5) * 100}px`);
+        container.appendChild(heart);
+      }
+    }
+    createHearts(20);
+
+    // 光晕粒子
+    function createParticles(count) {
+      const body = document.body;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 100 + 40;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.left = `${Math.random() * 100}%`;
+        p.style.top = `${Math.random() * 100}%`;
+        p.style.setProperty('--p-dur', `${Math.random() * 6 + 6}s`);
+        p.style.setProperty('--px', `${(Math.random() - 0.5) * 60}px`);
+        p.style.setProperty('--py', `${(Math.random() - 0.5) * 60}px`);
+        p.style.setProperty('--px2', `${(Math.random() - 0.5) * 60}px`);
+        p.style.setProperty('--py2', `${(Math.random() - 0.5) * 60}px`);
+        p.style.animationDelay = `${Math.random() * 4}s`;
+        body.appendChild(p);
+      }
+    }
+    createParticles(8);
+  </script>
+</body>
+</html>
